@@ -40,7 +40,7 @@ body {
 }
 @keyframes fillProgress {
     from { width: 0; }
-    to { width:100%; }
+    to { width: 100%; }
 }
 .progress-bar {
     animation: fillProgress 3s ease-in-out;
@@ -52,3 +52,75 @@ body {
 .stats-label {
     margin-bottom: 10px;
 }
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
+    margin: 20px;
+}
+.card {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border: none;
+}
+.result {
+    margin-top: 20px;
+}
+#generateShotChart {
+    display: none; /* Initially hidden */
+}
+
+.hidden {
+    display: none;
+}
+.progress {
+    height: 1.5rem;
+}
+@keyframes fillProgress {
+    from { width: 0; }
+    to { width: 100%; }
+}
+.progress-bar {
+    animation: fillProgress 3s ease-in-out;
+    font-size: 0.9rem;
+    font-weight: bold;
+    background: linear-gradient(to right, red, green);
+    color: black; /* Ensures text is visible */
+}
+.stats-label {
+    margin-bottom: 10px;
+}
+
+/* Styles for player ranks */
+.player-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.player-list li {
+    padding: 10px 0;
+    text-align: center;
+}
+
+.player-rank-1 {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+.player-rank-2 {
+    font-size: 1.4rem;
+}
+.player-rank-3 {
+    font-size: 1.3rem;
+}
+.player-rank-4,
+.player-rank-5,
+.player-rank-6,
+.player-rank-7,
+.player-rank-8,
+.player-rank-9,
+.player-rank-10 {
+    font-size: 1.2rem;
+}
+
+.medal {
+    margin-right: 8px;
+}
+
