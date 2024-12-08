@@ -1,0 +1,45 @@
+Design Goals
+1. User-Friendly Interface: The application was designed with simplicity in mind, allowing users to interact with data without requiring technical knowledge.
+2. Dynamic Data Fetching: Stats and headshots are fetched dynamically from external APIs to ensure up-to-date information.
+3. Responsive Design: CSS styling ensures compatibility across devices, providing a seamless experience on both desktop and mobile.
+
+Technical Architecture
+1. Backend: Flask Framework
+Flask was chosen for its lightweight and flexible nature, making it ideal for this application. The backend manages data fetching, processing, and routing.
+
+Key Routes
+- `/`: Serves the main interface for fetching player stats.
+- `/get_stats`: Handles API calls to fetch player-specific stats and prepares data for frontend rendering.
+- `/run-script`: Executes the `shot_chart.py` script to generate heatmaps.
+- `/leaderboard`: Displays top player stats in various categories in the 'leaderboard.html' interface.
+
+API Integration
+The application integrates with the NBA API to fetch real-time player statistics and headshots. The `requests` library is used for making HTTP requests.
+
+Data Processing
+The backend processes raw data into meaningful formats:
+- Pandas is used for handling and transforming tabular data efficiently.
+- Rankings are calculated for numeric fields using the `rank` method, ensuring users can compare player performance easily.
+- Non-essential fields like `PLAYER_ID`, `RANK`, and `TEAM_ID` are filtered out before sending data to the frontend.
+
+2. Frontend: HTML, CSS, and JavaScript
+The frontend is built with a combination of HTML templates, Bootstrap, and custom CSS for styling, with JavaScript handling dynamic interactions.
+
+Styling (CSS)
+Custom CSS enhances the aesthetics and responsiveness of the application:
+- Theming: Colors and fonts are selected to align with professional sports branding.
+- Responsive Design: Bootstrap ensures the layout adapts to various screen sizes.
+- Animations: Progress bars animate using `@keyframes`, providing a visual representation of player rankings.
+
+Dynamic Rendering (JavaScript)
+JavaScript is used to fetch data from the backend and dynamically update the UI:
+- Dynamic Headshots: Player headshots are retrieved from the NBA’s public URLs and displayed only after a successful data fetch.
+- Progress Bars: Player rankings are visualized using animated progress bars, styled with gradients for better clarity.
+- Error Handling: Alerts notify users when data is unavailable or an invalid player name is entered.
+
+3. Heatmap Generation
+The `shot_chart.py` script generates shot charts using matplotlib. This was chosen for its powerful visualization capabilities and ability to customize the chart aesthetics.
+- Accepts a player name as inputs.
+- Fetches player shooting data.
+- Plots shooting percentages across different areas of the court, visualized as a heatmap.
+
