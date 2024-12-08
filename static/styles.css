@@ -1,0 +1,54 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
+    margin: 20px;
+}
+.card {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border: none;
+}
+.btn-primary {
+    background-color: #0056b3;
+    border: none;
+}
+.btn-primary:hover {
+    background-color: #003d80;
+}
+.btn-secondary {
+    background-color: #6c757d;
+    border: none;
+}
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+.carousel-inner {
+    border-radius: 8px;
+    overflow: hidden;
+}
+.result {
+    margin-top: 20px;
+}
+#generateShotChart {
+    display: none; /* Initially hidden */
+}
+
+.hidden {
+    display: none;
+}
+.progress {
+    height: 1.5rem;
+}
+@keyframes fillProgress {
+    from { width: 0; }
+    to { width:100%; }
+}
+.progress-bar {
+    animation: fillProgress 3s ease-in-out;
+    font-size: 0.9rem;
+    font-weight: bold;
+    background: linear-gradient(to right, red, green);
+    color: black; /* Ensures text is visible */
+}
+.stats-label {
+    margin-bottom: 10px;
+}

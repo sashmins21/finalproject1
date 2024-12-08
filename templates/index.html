@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NBA Player Stats and Shot Chart</title>
+    <a href="/leaderboard" class="btn btn-primary w-100 mt-3">View Leaderboard</a>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet">
+</head>
+<body>
+    <div class="container my-5">
+
+        <div class="text-center mb-4">
+            <img src="{{ url_for('static', filename='nba-logo.png') }}" alt="NBA Logo" class="img-fluid" style="max-height: 150px;">
+        </div>
+
+        <h1 class="text-center mb-4">NBA Player Stats and Shot Chart</h1>
+        
+        <!-- Input Section -->
+        <div class="card p-4 mb-4">
+            <div class="mb-3">
+                <label for="playerName" class="form-label">Enter Player Name:</label>
+                <input type="text" id="playerName" class="form-control" placeholder="e.g., LeBron James">
+            </div>
+            <button onclick="fetchStats()" class="btn btn-primary w-100 mb-3">Get Stats</button>
+        </div>
+
+        <div id="playerInfo" class="text-center hidden">
+            <!-- Headshot -->
+            <img id="playerHeadshot" src="" alt="Player Headshot" class="img-fluid rounded-circle mb-3" style="max-height: 150px;">
+            
+            <!-- Player Name -->
+            <h2 id="playerName"></h2>
+        </div>        
+
+        <!-- Stats Result Section -->
+        <div id="result" class="result"></div>
+
+        <!-- Progress Bars Section -->
+        <div id="progressBars" class="mt-4"></div>
+
+        <!-- Generate Heat Map Button -->
+        <button id="generateShotChart" onclick="runScript()" class="btn btn-secondary w-100 mt-3">Generate Shot Chart</button>
+
+        <!-- Output Section -->
+        <div id="output" class="mt-4"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        async function fetchStats() {
+            const playerName = document.getElementById('playerName').value.trim();
+            if (!playerName) {
+                alert("Please enter a valid player name.");
+                return;
+            }
+
+            const resultDiv = document.getElementById('result');
+            const progressBarsDiv = document.getElementById('progressBars');
+            const playerInfoDiv = document.getElementById('playerInfo');
+            const playerHeadshot = document.getElementById('playerHeadshot');
+            const playerNameElem = document.getElementById('playerName');
+            resultDiv.innerHTML = `<div class="alert alert-info">Fetching stats...</div>`;
+            progressBarsDiv.innerHTML = '';
+
+            try {
+                const response = await fetch('/get_stats', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ playerName: playerName }),
+                });
+
+                const data = await response.json();
+                if (!data || data.error) {
+                    resultDiv.innerHTML = `<div class="alert alert-danger">${data.error || 'Player not found.'}</div>`;
+                    document.getElementById('generateShotChart').style.display = "none";
+                    return;
+                }
+
+                // Display player name and headshot
+                playerNameElem.innerText = data.PLAYER;
+                playerHeadshot.src = `https://ak-static.cms.nba.com/wp-content/uploads/headshots/nba/latest/260x190/${data.PLAYER_ID}.png`;
+                playerInfoDiv.style.display = "block";
+
+                // Exclude certain categories
+                const excludedCategories = ['PLAYER_ID', 'RANK', 'TEAM_ID', 'PLAYER', 'TEAM'];
+                const filteredStats = Object.entries(data).filter(([key]) => !excludedCategories.includes(key.toUpperCase()));
+
+                // Build carousel for player stats
+                let carouselHTML = `
+                    <div id="statsCarousel" class="carousel slide" data-bs-ride="carousel">
+                        <div class="carousel-inner">
+                `;
+                let isActive = true;
+                for (const [key, value] of Object.entries(data)) {
+                    if (!key.endsWith('_RANK')) {
+                        const rankKey = `${key}_RANK`;
+                        carouselHTML += `
+                            <div class="carousel-item ${isActive ? 'active' : ''}">
+                                <div class="d-flex flex-column justify-content-center align-items-center p-5 bg-light">
+                                    <h4>${key}</h4>
+                                    <p class="fs-4">Value: ${value}</p>
+                                    <p class="fs-5">Rank: ${data[rankKey] || 'N/A'}</p>
+                                </div>
+                            </div>
+                        `;
+                        isActive = false;
+                    }
+                }
+
+                carouselHTML += `
+                        </div>
+                        <button class="carousel-control-prev" type="button" data-bs-target="#statsCarousel" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Previous</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#statsCarousel" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Next</span>
+                        </button>
+                    </div>
+                `;
+                resultDiv.innerHTML = `<div class="card p-4">${carouselHTML}</div>`;
+
+                // Add Progress Bars for Rankings
+                let progressBarsHTML = '<h5 class="stats-label">Player Ranking Progress</h5>';
+                for (const [key, value] of Object.entries(data)) {
+                    if (key.endsWith('_RANK')) {
+                        const statName = key.replace('_RANK', '');
+                        const rankPercent = 100 - (value / 500) * 100; // Assuming 500 players in the league
+                        progressBarsHTML += `
+                            <div class="mb-3">
+                                <label>${statName} Rank: ${value}</label>
+                                <div class="progress">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: ${rankPercent}%" aria-valuenow="${rankPercent}" aria-valuemin="0" aria-valuemax="100">
+                                        ${rankPercent.toFixed(1)}%
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+                progressBarsDiv.innerHTML = progressBarsHTML;
+
+                document.getElementById('generateShotChart').style.display = "block";
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="alert alert-danger">Unexpected error: ${error.message}</div>`;
+            }
+        }
+
+        async function runScript() {
+            const playerName = document.getElementById('playerName').value.trim();
+            if (!playerName) {
+                alert("Please enter a valid player name.");
+                return;
+            }
+
+            const outputDiv = document.getElementById("output");
+            outputDiv.innerHTML = `<div class="alert alert-info">Generating shot chart...</div>`;
+
+            try {
+                const response = await fetch("/run-script", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ player_name: playerName }),
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    outputDiv.innerHTML = `<div class="card p-4"><pre>${result.output}</pre></div>`;
+                } else {
+                    outputDiv.innerHTML = `<div class="alert alert-danger">Error: ${result.error}</div>`;
+                }
+            } catch (error) {
+                outputDiv.innerHTML = `<div class="alert alert-danger">Unexpected error: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>
+
+
