@@ -4,30 +4,37 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NBA Player Stats and Shot Chart</title>
+    <!-- Link to leaderboard page -->
     <a href="/leaderboard" class="btn btn-primary w-100 mt-3">View Leaderboard</a>
+    <!-- Bootstrap CSS for styling -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Linking to a custom stylesheet -->
     <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet">
 </head>
 <body>
     <div class="container my-5">
-
+        <!-- NBA Logo Display -->
         <div class="text-center mb-4">
             <img src="{{ url_for('static', filename='nba-logo.png') }}" alt="NBA Logo" class="img-fluid" style="max-height: 150px;">
         </div>
 
+        <!-- Page Title -->
         <h1 class="text-center mb-4">NBA Player Stats and Shot Chart</h1>
         
         <!-- Input Section -->
         <div class="card p-4 mb-4">
             <div class="mb-3">
+                <!-- Input for player name -->
                 <label for="playerName" class="form-label">Enter Player Name:</label>
                 <input type="text" id="playerName" class="form-control" placeholder="e.g., LeBron James">
             </div>
+            <!-- Button to fetch stats -->
             <button onclick="fetchStats()" class="btn btn-primary w-100 mb-3">Get Stats</button>
         </div>
 
+        <!-- Player Information Section -->
         <div id="playerInfo" class="text-center hidden">
-            <!-- Headshot -->
+            <!-- Player Headshot -->
             <img id="playerHeadshot" src="" alt="Player Headshot" class="img-fluid rounded-circle mb-3" style="max-height: 150px;">
             
             <!-- Player Name -->
@@ -47,13 +54,17 @@
         <div id="output" class="mt-4"></div>
     </div>
 
+    <!-- Bootstrap JavaScript for carousel and interactive features -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
+        /**
+         * Fetch player stats from the server based on the entered player name.
+         */
         async function fetchStats() {
             const playerName = document.getElementById('playerName').value.trim();
             if (!playerName) {
-                alert("Please enter a valid player name.");
+                alert("Please enter a valid player name."); // Alert if the input is empty
                 return;
             }
 
@@ -62,10 +73,11 @@
             const playerInfoDiv = document.getElementById('playerInfo');
             const playerHeadshot = document.getElementById('playerHeadshot');
             const playerNameElem = document.getElementById('playerName');
-            resultDiv.innerHTML = `<div class="alert alert-info">Fetching stats...</div>`;
+            resultDiv.innerHTML = `<div class="alert alert-info">Fetching stats...</div>`; // Show loading message
             progressBarsDiv.innerHTML = '';
 
             try {
+                // Make a POST request to fetch player stats
                 const response = await fetch('/get_stats', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -73,9 +85,11 @@
                 });
 
                 const data = await response.json();
+
+                // Handle errors from the server response
                 if (!data || data.error) {
                     resultDiv.innerHTML = `<div class="alert alert-danger">${data.error || 'Player not found.'}</div>`;
-                    document.getElementById('generateShotChart').style.display = "none";
+                    document.getElementById('generateShotChart').style.display = "none"; // Hide shot chart button if no data
                     return;
                 }
 
@@ -84,18 +98,18 @@
                 playerHeadshot.src = `https://ak-static.cms.nba.com/wp-content/uploads/headshots/nba/latest/260x190/${data.PLAYER_ID}.png`;
                 playerInfoDiv.style.display = "block";
 
-                // Exclude certain categories
+                // Exclude certain metadata fields
                 const excludedCategories = ['PLAYER_ID', 'RANK', 'TEAM_ID', 'PLAYER', 'TEAM'];
                 const filteredStats = Object.entries(data).filter(([key]) => !excludedCategories.includes(key.toUpperCase()));
 
-                // Build carousel for player stats
+                // Create a carousel to display player stats
                 let carouselHTML = `
                     <div id="statsCarousel" class="carousel slide" data-bs-ride="carousel">
                         <div class="carousel-inner">
                 `;
                 let isActive = true;
                 for (const [key, value] of Object.entries(data)) {
-                    if (!key.endsWith('_RANK')) {
+                    if (!key.endsWith('_RANK')) { // Exclude rank-specific keys here
                         const rankKey = `${key}_RANK`;
                         carouselHTML += `
                             <div class="carousel-item ${isActive ? 'active' : ''}">
@@ -106,12 +120,13 @@
                                 </div>
                             </div>
                         `;
-                        isActive = false;
+                        isActive = false; // Set subsequent items to inactive
                     }
                 }
 
                 carouselHTML += `
                         </div>
+                        <!-- Carousel navigation controls -->
                         <button class="carousel-control-prev" type="button" data-bs-target="#statsCarousel" data-bs-slide="prev">
                             <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                             <span class="visually-hidden">Previous</span>
@@ -124,7 +139,7 @@
                 `;
                 resultDiv.innerHTML = `<div class="card p-4">${carouselHTML}</div>`;
 
-                // Add Progress Bars for Rankings
+                // Display player rankings as progress bars
                 let progressBarsHTML = '<h5 class="stats-label">Player Ranking Progress</h5>';
                 for (const [key, value] of Object.entries(data)) {
                     if (key.endsWith('_RANK')) {
@@ -144,23 +159,27 @@
                 }
                 progressBarsDiv.innerHTML = progressBarsHTML;
 
-                document.getElementById('generateShotChart').style.display = "block";
+                document.getElementById('generateShotChart').style.display = "block"; // Show shot chart button
             } catch (error) {
-                resultDiv.innerHTML = `<div class="alert alert-danger">Unexpected error: ${error.message}</div>`;
+                resultDiv.innerHTML = `<div class="alert alert-danger">Unexpected error: ${error.message}</div>`; // Handle unexpected errors
             }
         }
 
+        /**
+         * Generate a shot chart for the entered player.
+         */
         async function runScript() {
             const playerName = document.getElementById('playerName').value.trim();
             if (!playerName) {
-                alert("Please enter a valid player name.");
+                alert("Please enter a valid player name."); // Alert if the input is empty
                 return;
             }
 
             const outputDiv = document.getElementById("output");
-            outputDiv.innerHTML = `<div class="alert alert-info">Generating shot chart...</div>`;
+            outputDiv.innerHTML = `<div class="alert alert-info">Generating shot chart...</div>`; // Show loading message
 
             try {
+                // Make a POST request to generate a shot chart
                 const response = await fetch("/run-script", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -168,13 +187,15 @@
                 });
 
                 const result = await response.json();
+
+                // Display the shot chart or an error message
                 if (result.success) {
                     outputDiv.innerHTML = `<div class="card p-4"><pre>${result.output}</pre></div>`;
                 } else {
                     outputDiv.innerHTML = `<div class="alert alert-danger">Error: ${result.error}</div>`;
                 }
             } catch (error) {
-                outputDiv.innerHTML = `<div class="alert alert-danger">Unexpected error: ${error.message}</div>`;
+                outputDiv.innerHTML = `<div class="alert alert-danger">Unexpected error: ${error.message}</div>`; // Handle unexpected errors
             }
         }
     </script>
