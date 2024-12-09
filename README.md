@@ -7,3 +7,6 @@
   "View Leaderboard" button at the top of the page will show the top 10 players across categories like points, assists, rebounds, and more when you click either the left or right side of the container. Data is dynamically fetched from the NBA's stats API. To return to the homepage, click the "Go Back" button.
 
   Dynamic player headshots are displayed upon searching for a player. They are only displayed when stats are successfully fetched.
+
+  Video Link: https://www.youtube.com/watch?v=X_sH38WEYAU
+  
