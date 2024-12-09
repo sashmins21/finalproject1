@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify
 import pandas as pd
 import requests
 import subprocess
+import os
 
 app = Flask(__name__)
 
@@ -56,12 +57,24 @@ def run_script():
     try:
         data = request.json
         player_name = data.get("player_name")
+        if not player_name:
+            return jsonify({"success": False, "error": "Player name is required."})
+
+        print(f"Running script with player name: {player_name}")  # Debugging
+
         result = subprocess.run(
-            ["python3", "shot_chart.py", player_name, "2024-25"],  # Adjust season if needed
+            ["python3", "shot_chart.py", player_name, "2024-25"],
             capture_output=True,
             text=True
         )
-        return jsonify({"success": True, "output": result.stdout})
+
+        print(f"STDOUT: {result.stdout}")
+        print(f"STDERR: {result.stderr}")  # Debugging
+
+        if result.returncode == 0:
+            return jsonify({"success": True, "output": result.stdout})
+        else:
+            return jsonify({"success": False, "error": result.stderr})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
 

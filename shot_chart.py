@@ -19,26 +19,37 @@ import matplotlib.colors as mcolors
 
 # get_player_shotchartdetail: player_name, season_id -> player_shotchart_df, league_avg
 def get_player_shotchartdetail(player_name, season_id):
-
-    # player dictionary
+    # Fetch players from the NBA API
     nba_players = players.get_players()
-    player_dict = [player for player in nba_players if player['full_name'] == player_name][0]
+    print(f"Number of players fetched: {len(nba_players)}")  # Debugging
 
-    # career dataframe
+    # Perform a case-insensitive search for the player
+    player_dict = next((player for player in nba_players if player['full_name'].lower() == player_name.lower()), None)
+    
+    # Handle the case where the player is not found
+    if not player_dict:
+        raise ValueError(f"Player '{player_name}' not found in the NBA player database. Check for typos or formatting.")
+
+    # Fetch career stats for the player
     career = playercareerstats.PlayerCareerStats(player_id=player_dict['id'])
     career_df = career.get_data_frames()[0]
 
-    # team id during the season
-    team_id = career_df[career_df['SEASON_ID'] == season_id]['TEAM_ID']
+    # Get the team ID for the given season
+    team_id = career_df.loc[career_df['SEASON_ID'] == season_id, 'TEAM_ID']
+    if team_id.empty:
+        raise ValueError(f"No team found for player '{player_name}' in season '{season_id}'.")
 
-    # shotchartdetail endpoints
-    shotchartlist = shotchartdetail.ShotChartDetail(team_id=int(team_id),
-                                                    player_id=int(player_dict['id']),
-                                                    season_type_all_star='Regular Season',
-                                                    season_nullable=season_id,
-                                                    context_measure_simple="FGA").get_data_frames()
+    # Fetch shot chart details
+    shotchartlist = shotchartdetail.ShotChartDetail(
+        team_id=int(team_id),
+        player_id=int(player_dict['id']),
+        season_type_all_star='Regular Season',
+        season_nullable=season_id,
+        context_measure_simple="FGA"
+    ).get_data_frames()
 
     return shotchartlist[0], shotchartlist[1]
+
 
 
 
